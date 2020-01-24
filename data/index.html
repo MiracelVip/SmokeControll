@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>SmokeControll</title>
+
+  <!-- Custom fonts for this template-->
+ <script src="https://kit.fontawesome.com/5da85a4191.js" crossorigin="anonymous"></script>
+  
+
+  <!-- Custom styles for this template-->
+  <link href="sb-admin.min.css" rel="stylesheet">
+  <link href="bootstrap4-toggle.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+  <a class="navbar-brand" href="#"><i class="fab fa-gripfire"></i> SmokeControll</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#"><i class="fas fa-tachometer-alt"></i> Übersicht</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="#"><i class="fas fa-chart-area"></i> Diagramm </a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="#"><i class="fas fa-cogs"></i> Einstellungen</a>
+      </li>
+      
+</nav>
+  </div>
+
+  <div id="wrapper">
+    <div id="content-wrapper">
+
+      <div class="container">
+
+        <!-- Icon Cards-->
+        <div class="row justify-content-md-center">
+          <div class="col-xl-6 col-sm-12 mb-12">
+            <div class="card text-white bg-info o-hidden h-100">
+              <div class="card-header">Räucherofen</div>
+              <div class="card-body bg-white text-dark mx-auto">
+                <div class="card-body-icon">
+                  <i class="fas fa-fw temperature-low"></i>
+                </div>
+                <center>
+                    <h6 class="text-secondary">Aktuelle Temperatur</h6><br>
+                    <h2 id="sc_temp_act"><span id="act">--.--</span><small class="text-secondary"> °C</small></h2><br>
+                    <hr>
+                    <h6 class="text-secondary">Zieltemperatur</h6><br>
+                    <input type="number" value="15.00" min="0" max="250" step="1.0" data-decimals="2" data-suffix="°C"/><br>
+                    
+                    <button type="button" class="btn btn-dark" style="width:120px"><i class="fas fa-car"></i><br>Automatik</button>
+                    <button type="button" class="btn btn-dark" style="width:120px"><i class="fas fa-burn"></i><br>25%</button>
+                </center>
+
+              </div>
+            </div>
+          </div>
+        </div>
+          
+        
+      <div class="row">
+  
+      </div>
+      <!-- /.container -->
+
+    </div>
+    <!-- /.content-wrapper -->
+
+  </div>
+  <!-- /#wrapper -->
+  <!-- Bootstrap core JavaScript-->
+  <script src="jquery.min.js"></script>
+  <script src="bootstrap.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <!--script src="vendor/jquery-easing/jquery.easing.min.js"></script-->
+
+
+  <!-- Custom scripts for all pages-->
+  <script src="sb-admin.min.js"></script>
+  <script src="bootstrap4-toggle.min.js"></script>
+  <script src="bootstrap-input-spinner.js"></script>
+  
+<script>
+   var target =  $("input[type='number']").inputSpinner();
+    target.on("change", function (event) {
+        $.get("/setTarget?target="+target.val())
+            console.log(target.val())
+})
+   setInterval(function(){
+         $.get("/getAct", function(data, status){
+            $('#act').text(data);
+    });
+    
+    
+
+    }, 3000);
+</script>
+
+</body>
+
+</html>
