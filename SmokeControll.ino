@@ -6,7 +6,8 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <FS.h>
+#include <ArduinoJson.h>
+#include "FS.h"
 #include <Wire.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -19,19 +20,70 @@
 #define TEMP_PROBE_PIN 14    //D5
 #define OLED_SDA 0           //D2
 #define OLED_SCL 4           //D1
+/********************************************************************************
+ *****  Config JSON
+ *******************************************************************************/
+bool loadConfig() {
+  File configFile = SPIFFS.open("/config.json", "r");
+  if (!configFile) {
+    Serial.println("Failed to open config file");
+    return false;
+  }
 
+  size_t size = configFile.size();
+  if (size > 1024) {
+    Serial.println("Config file size is too large");
+    return false;
+  }
+
+  // Allocate a buffer to store contents of the file.
+  std::unique_ptr<char[]> buf(new char[size]);
+
+  // We don't use String here because ArduinoJson library requires the input
+  // buffer to be mutable. If you don't use ArduinoJson, you may as well
+  // use configFile.readString instead.
+  configFile.readBytes(buf.get(), size);
+
+  StaticJsonDocument<1000> doc;
+  auto error = deserializeJson(doc, buf.get());
+  if (error) {
+    Serial.println("Failed to parse config file");
+    return false;
+  }
+
+  const char* pid_p = doc["pid_p"];
+  const char* pid_i = doc["pid_i"];
+  const char* pid_d = doc["pid_d"];
+  const char* pid_outputMin = doc["pid_outputMin"];
+  const char* pid_outputMax = doc["pid_outputMax"];
+  const char* pid_setpoint = doc["pid_setpoint"];
+  const char* pid_automatic = doc["pid_automatic"];
+
+  // Real world application would store these values in some variables for
+  // later use.
+
+  Serial.print("Loaded pid_p: ");Serial.println(pid_p);
+  Serial.print("Loaded pid_i: ");Serial.println(pid_i);
+  Serial.print("Loaded pid_d: ");Serial.println(pid_d);
+  Serial.print("Loaded pid_outputMin: ");Serial.println(pid_outputMin);
+  Serial.print("Loaded pid_outputMax: ");Serial.println(pid_outputMax);
+  Serial.print("Loaded pid_setpoint: ");Serial.println(pid_setpoint);
+  Serial.print("Loaded pid_automatic: ");Serial.println(pid_automatic);
+  return true;
+}
+ 
 /********************************************************************************
  *****  PID Vars
  *******************************************************************************/
 double pid_outputMin = 0;
 double pid_outputMax = 0;
-double pid_p = 0.12;
+double pid_p_2 = pid_p.toDouble();
 double pid_i = 0.0003;
 double pid_d = 0;
 double pid_temperature = 0;
 double pid_setPoint = 0;
 double pid_outputVal = 0;
-AutoPID myPID(&pid_temperature, &pid_setPoint, &pid_outputVal, pid_outputMin, pid_outputMax, pid_p, pid_i, pid_d);
+AutoPID myPID(&pid_temperature, &pid_setPoint, &pid_outputVal, pid_outputMin, pid_outputMax, pid_p_2, pid_i, pid_d);
 
 /********************************************************************************
  *****  DS18b20
@@ -82,26 +134,16 @@ void setup(){
   /***********************************************
    ****  Read the last Config
    ***********************************************/
-  // Initialize SPIFFS
-  if(!SPIFFS.begin()){
-    Serial.println("An Error has occurred while mounting SPIFFS");
-    return;
+    if (!SPIFFS.begin()) {
+      Serial.println("Failed to mount file system");
+      return;
   }
-  //read pid_d.txt
-  File file = SPIFFS.open("/pid_d.txt", "r");
-  if (!file) {
-    Serial.println("Failed to open pid_d.txt for reading");
-    return;
+    if (!loadConfig()) {
+      Serial.println("Failed to load config");
+  } else {
+      Serial.println("Config loaded");
   }
-  while (file.available()) {
-    pid_d = file.read();    
-  }
-  file.close();
-  Serial.println("PID ");
-  Serial.println(pid_d);
-  pid_d = 100.987;
-  Serial.println("PID ");
-  Serial.println(pid_d);
+
 //  
 //
 //  // Connect to Wi-Fi

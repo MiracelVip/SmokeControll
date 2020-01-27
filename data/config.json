@@ -1,0 +1,9 @@
+{
+    "pid_p":"0.12",
+    "pid_i":"0.0003",
+    "pid_d":"0",
+    "pid_outputMin":"0",
+    "pid_outputMax":"255",
+    "pid_setpoint":"0",
+    "pid_automatic":"0"
+}
